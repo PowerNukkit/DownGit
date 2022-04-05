@@ -53,7 +53,7 @@ downGitModule.factory('downGitService', [
             return info;
         }
 
-        var downloadDir = function(progress){
+        var downloadDir = function(progress, autoClose){
             progress.isProcessing.val = true;
 
             var dirPaths = [];
@@ -61,10 +61,10 @@ downGitModule.factory('downGitService', [
             var requestedPromises = [];
 
             dirPaths.push(repoInfo.resPath);
-            mapFileAndDirectory(dirPaths, files, requestedPromises, progress);
+            mapFileAndDirectory(dirPaths, files, requestedPromises, progress, autoClose);
         }
 
-        var mapFileAndDirectory = function(dirPaths, files, requestedPromises, progress){
+        var mapFileAndDirectory = function(dirPaths, files, requestedPromises, progress, autoClose){
             $http.get(repoInfo.urlPrefix+dirPaths.pop()+repoInfo.urlPostfix).then(function(response) {
                 for(var i=response.data.length-1; i>=0; i--){
                     if(response.data[i].type=="dir"){
@@ -83,14 +83,14 @@ downGitModule.factory('downGitService', [
                 }
 
                 if(dirPaths.length<=0){
-                    downloadFiles(files, requestedPromises, progress);
+                    downloadFiles(files, requestedPromises, progress, autoClose);
                 } else{
-                    mapFileAndDirectory(dirPaths, files, requestedPromises, progress);
+                    mapFileAndDirectory(dirPaths, files, requestedPromises, progress, autoClose);
                 }
             });
         }
 
-        var downloadFiles = function(files, requestedPromises, progress){
+        var downloadFiles = function(files, requestedPromises, progress, autoClose){
             var zip = new JSZip();
             $q.all(requestedPromises).then(function(data) {
                 for(var i=files.length-1; i>=0; i--){
@@ -103,6 +103,9 @@ downGitModule.factory('downGitService', [
                 progress.isProcessing.val=false;
                 zip.generateAsync({type:"blob"}).then(function(content) {
                     saveAs(content, repoInfo.downloadFileName+".zip");
+                    if (autoClose) {
+                        window.close();
+                    }
                 });
             });
         }
@@ -119,7 +122,7 @@ downGitModule.factory('downGitService', [
             progress.totalFiles.val = requestedPromises.length;
         }
 
-        var downloadFile = function (url, progress, toastr, directFile) {
+        var downloadFile = function (url, progress, toastr, autoClose, directFile) {
             progress.isProcessing.val=true;
             progress.downloadedFiles.val = 0;
             progress.totalFiles.val = 1;
@@ -130,7 +133,7 @@ downGitModule.factory('downGitService', [
                 if (directFile) {
                     progress.isProcessing.val=false;
                     saveAs(new Blob([file.data]), repoInfo.downloadFileName);
-                    if (parameters.autoClose) {
+                    if (autoClose) {
                         window.close();
                     }
                 } else {
@@ -138,7 +141,7 @@ downGitModule.factory('downGitService', [
                     progress.isProcessing.val=false;
                     zip.generateAsync({type:"blob"}).then(function(content) {
                         saveAs(content, repoInfo.downloadFileName+".zip");
-                        if (parameters.autoClose) {
+                        if (autoClose) {
                             window.close();
                         }
                     });
@@ -167,16 +170,16 @@ downGitModule.factory('downGitService', [
                 }else{
                     $http.get(repoInfo.urlPrefix+repoInfo.resPath+repoInfo.urlPostfix).then(function(response) {
                         if(response.data instanceof Array){
-                            downloadDir(progress);
+                            downloadDir(progress, parameters.autoClose);
                         }else{
-                            downloadFile(response.data.download_url, progress, toastr, parameters.directFile);
+                            downloadFile(response.data.download_url, progress, toastr, parameters.autoClose, parameters.directFile);
                         }
 
                     }, function(error) {
                         console.log("probable big file.");
                         downloadFile("https://raw.githubusercontent.com/"+repoInfo.author+"/"+
                                 repoInfo.repository+"/"+repoInfo.branch+"/"+repoInfo.resPath,
-                                progress, toastr);
+                                progress, toastr, parameters.autoClose);
                     });
                 }
             },
