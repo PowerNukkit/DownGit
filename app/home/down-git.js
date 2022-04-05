@@ -104,7 +104,7 @@ downGitModule.factory('downGitService', [
                 zip.generateAsync({type:"blob"}).then(function(content) {
                     saveAs(content, repoInfo.downloadFileName+".zip");
                     if (autoClose) {
-                        window.close();
+                        setTimeout(function(){window.close();}, 1000);
                     }
                 });
             });
@@ -134,7 +134,7 @@ downGitModule.factory('downGitService', [
                     progress.isProcessing.val=false;
                     saveAs(new Blob([file.data]), repoInfo.downloadFileName);
                     if (autoClose) {
-                        window.close();
+                        setTimeout(function(){window.close();}, 1000);
                     }
                 } else {
                     zip.file(repoInfo.rootName, file.data);
@@ -142,7 +142,7 @@ downGitModule.factory('downGitService', [
                     zip.generateAsync({type:"blob"}).then(function(content) {
                         saveAs(content, repoInfo.downloadFileName+".zip");
                         if (autoClose) {
-                            window.close();
+                            setTimeout(function(){window.close();}, 1000);
                         }
                     });
                 }
