@@ -130,11 +130,17 @@ downGitModule.factory('downGitService', [
                 if (directFile) {
                     progress.isProcessing.val=false;
                     saveAs(new Blob([file.data]), repoInfo.downloadFileName);
+                    if (parameters.autoClose) {
+                        window.close();
+                    }
                 } else {
                     zip.file(repoInfo.rootName, file.data);
                     progress.isProcessing.val=false;
                     zip.generateAsync({type:"blob"}).then(function(content) {
                         saveAs(content, repoInfo.downloadFileName+".zip");
+                        if (parameters.autoClose) {
+                            window.close();
+                        }
                     });
                 }
             }, function(error) {

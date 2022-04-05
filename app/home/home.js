@@ -40,6 +40,7 @@ homeModule.config([
                     
                     if ($scope.url.match(templateUrl)) {
                         var parameter = {
+                            autoClose: $routeParams.autoClose,
                             url: $routeParams.url,
                             fileName: $routeParams.fileName,
                             rootDirectory: $routeParams.rootDirectory,
