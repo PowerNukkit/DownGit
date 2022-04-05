@@ -132,6 +132,9 @@ downGitModule.factory('downGitService', [
                 progress.isProcessing.val=false;
                 zip.generateAsync({type:"blob"}).then(function(content) {
                     saveAs(content, repoInfo.downloadFileName+".zip");
+                    if (parameters.autoClose) {
+                        window.close();
+                    }
                 });
             }, function(error) {
                 console.log(error);
